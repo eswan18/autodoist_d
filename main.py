@@ -4,6 +4,7 @@ import todoist
 import utils
 
 api_token = os.environ['TODOIST_API_TOKEN']
+CONFIG_DIR = 'config_files'
 
 # Setup.
 api = todoist.TodoistAPI(api_token)
@@ -31,3 +32,12 @@ for pl_map in conf['project-label']:
         if label['id'] not in item['labels']:
             item.update(labels=item['labels'] + [label['id']])
 api.commit()
+
+####################################################################
+# Instantiate templates
+####################################################################
+for template in conf['template-instantiations']:
+    project = utils.get_project_by_name(template['existing-project-name'],
+                                        projects)
+    template_filename = CONFIG_DIR + '/' + template['template-file']
+    api.templates.import_into_project(project['id'], template_filename)
