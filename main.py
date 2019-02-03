@@ -1,6 +1,7 @@
 import os
 import yaml
 import todoist
+import utils
 
 api_token = os.environ['TODOIST_API_TOKEN']
 
@@ -20,15 +21,13 @@ items = api.items.all()
 ####################################################################
 # Auto-label items in projects
 ####################################################################
-# First convert the label-project list into a mapping.
-label_project = {entry['project']: entry['label']
-                 for entry in conf['label-project']}
-
-# Iterate through the projects, skipping the ones that aren't in the mapping.
-for project in projects:
-    if project['name'] in label_project:
-        project_items = [item for item in items
-                         if item['project_id'] == project['id']]
-        print(project)
-        print([item['content'] for item in project_items])
-        break
+for pl_map in conf['project-label']:
+    # Find the matching project and labels and get their IDs.
+    project = utils.get_project_by_name(pl_map['project'], projects)
+    label = utils.get_label_by_name(pl_map['label'], labels)
+    project_items = utils.get_items_by_project_id(project['id'], items)
+    # Make sure every item has the required label. If not, add it.
+    for item in project_items:
+        if label['id'] not in item['labels']:
+            item.update(labels=item['labels'] + [label['id']])
+api.commit()
