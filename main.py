@@ -1,6 +1,8 @@
 # Builtins
 import os
 import time
+import logging
+import argparse
 # Installed
 import yaml
 import todoist
@@ -8,25 +10,47 @@ import schedule
 # Project libraries
 import utils
 
-api_token = os.environ['TODOIST_API_TOKEN']
+API_TOKEN = os.environ['TODOIST_API_TOKEN']
 CONFIG_DIR = 'config_files'
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+# Console Handler
+ch = logging.StreamHandler()
+formatter = logging.Formatter('%(message)s')
+ch.setFormatter(formatter)
+
+### Command line arguments
+parser = argparse.ArgumentParser(description='Automate Todoist workflows.')
+parser.add_argument('--loglevel', dest='loglevel', nargs=1,
+                    help='set a log level')
+args = parser.parse_args()
+
+# If the user specified a log level, use it.
+if args.loglevel is not None:
+    loglevel, *rest = args.loglevel
+    ch.setLevel(loglevel.upper())
+# Register the console handler with the logger.
+logger.addHandler(ch)
+logger.info('Synced with Todoist.')
+
 # Setup.
-api = todoist.TodoistAPI(api_token)
+api = todoist.TodoistAPI(API_TOKEN)
 api.sync()
+logger.info('Synced with Todoist.')
 
 # Load the config.
 with open('config.yml') as f:
     conf = yaml.load(f)
-
-# Fetch the current versions of projects, items, and labels.
-labels = api.labels.all()
-projects = api.projects.all()
-items = api.items.all()
-
-
+logger.debug('Loaded config file.')
 
 def update():
+    logger.info('Started update job.')
+    # Fetch the current versions of projects, items, and labels.
+    labels = api.labels.all()
+    projects = api.projects.all()
+    items = api.items.all()
+    logger.info('Fetched labels, projects, and items from Todoist.')
     ####################################################################
     # Auto-label items in projects
     ####################################################################
@@ -40,6 +64,9 @@ def update():
             if label['id'] not in item['labels']:
                 item.update(labels=item['labels'] + [label['id']])
     api.commit()
+    logger.info('Committed to Todoist. Completed update job.')
+# Run update every 10 minutes.
+schedule.every(1).minutes.do(update)
 
 ####################################################################
 # Instantiate templates
@@ -51,7 +78,6 @@ def update():
 #    api.templates.import_into_project(project['id'], template_filename)
 
 # Use the schedule module to handle the looping.
-schedule.every(10).minutes.do(update)
 while True:
     schedule.run_pending()
     time.sleep(60)
