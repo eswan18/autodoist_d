@@ -19,8 +19,9 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 formatter = logging.Formatter('%(message)s')
 ch.setFormatter(formatter)
-
-### Command line arguments
+####################################################################
+# Command line arguments
+####################################################################
 parser = argparse.ArgumentParser(description='Automate Todoist workflows.')
 parser.add_argument('--loglevel', dest='loglevel', nargs=1,
                     help='set a log level')
@@ -44,6 +45,7 @@ with open('config.yml') as f:
     conf = yaml.load(f)
 logger.debug('Loaded config file.')
 
+
 def update():
     logger.info('Started update job.')
     # Fetch the current versions of projects, items, and labels.
@@ -65,6 +67,8 @@ def update():
                 item.update(labels=item['labels'] + [label['id']])
     api.commit()
     logger.info('Committed to Todoist. Completed update job.')
+
+
 # Run update every 10 minutes.
 schedule.every(1).minutes.do(update)
 
