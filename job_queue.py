@@ -10,6 +10,8 @@ class JobQueue():
         self.jobdict = jobdict
 
     def add_job(self, job_name, job_func, job_cron):
+        if job_name in self.jobdict:
+            raise ValueError(f'Job name {job_name} already exists.')
         # Convert the current time to UTC so the math works.
         current_time = datetime.now().astimezone(pytz.utc)
         # Create a croniter object for the job
