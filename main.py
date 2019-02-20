@@ -6,7 +6,7 @@ import argparse
 # Installed
 import yaml
 import todoist
-import schedule
+import croniter
 # Project libraries
 import utils
 
@@ -69,8 +69,6 @@ def update():
     logger.info('Committed to Todoist. Completed update job.')
 
 
-# Run update every 10 minutes.
-schedule.every(1).minutes.do(update)
 
 ####################################################################
 # Instantiate templates
@@ -83,5 +81,5 @@ schedule.every(1).minutes.do(update)
 
 # Use the schedule module to handle the looping.
 while True:
-    schedule.run_pending()
-    time.sleep(60)
+    # Run at most every 5 minutes.
+    time.sleep(5 * 60)
