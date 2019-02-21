@@ -6,9 +6,9 @@ import argparse
 # Installed
 import yaml
 import todoist
-import croniter
 # Project libraries
 import utils
+from job_queue import JobQueue
 
 API_TOKEN = os.environ['TODOIST_API_TOKEN']
 CONFIG_DIR = 'config_files'
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 # Console Handler
 ch = logging.StreamHandler()
-formatter = logging.Formatter('%(message)s')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 ####################################################################
 # Command line arguments
@@ -33,12 +33,12 @@ if args.loglevel is not None:
     ch.setLevel(loglevel.upper())
 # Register the console handler with the logger.
 logger.addHandler(ch)
-logger.info('Synced with Todoist.')
 
 # Setup.
 api = todoist.TodoistAPI(API_TOKEN)
 api.sync()
 logger.info('Synced with Todoist.')
+q = JobQueue()
 
 # Load the config.
 with open('config.yml') as f:
@@ -49,9 +49,7 @@ logger.debug('Loaded config file.')
 def update():
     logger.info('Started update job.')
     # Fetch the current versions of projects, items, and labels.
-    labels = api.labels.all()
-    projects = api.projects.all()
-    items = api.items.all()
+    labels, projects, items = utils.fetch(api)
     logger.info('Fetched labels, projects, and items from Todoist.')
     ####################################################################
     # Auto-label items in projects
@@ -69,6 +67,9 @@ def update():
     logger.info('Committed to Todoist. Completed update job.')
 
 
+# Add the update function to the job queue. It should run every 5 minutes.
+q.add_job(job_name='Update Templates', job_func=update,
+          job_cron='*/5 * * * *')
 
 ####################################################################
 # Instantiate templates
@@ -81,5 +82,7 @@ def update():
 
 # Use the schedule module to handle the looping.
 while True:
-    # Run at most every 5 minutes.
-    time.sleep(5 * 60)
+    # Run at most every minute.
+    logger.debug('Running pending job queue jobs.')
+    q.run_pending()
+    time.sleep(60)

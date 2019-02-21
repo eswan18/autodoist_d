@@ -2,6 +2,7 @@ from datetime import datetime
 from croniter import croniter
 import pytz
 
+
 class JobQueue():
     '''
     A queue of jobs to be run at regular intervals.

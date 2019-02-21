@@ -15,3 +15,10 @@ def get_label_by_name(l_name, labels):
 def get_items_by_project_id(p_id, items):
     return [item for item in items
             if item['project_id'] == p_id]
+
+
+def fetch(api):
+    labels = api.labels.all()
+    projects = api.projects.all()
+    items = api.items.all()
+    return labels, projects, items
