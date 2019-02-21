@@ -44,7 +44,6 @@ class JobQueue():
         for name, job in self.jobdict.items():
             # Execute any jobs that are due.
             if job['next'] < datetime.now().astimezone(pytz.utc):
-                print(f'Executing at {datetime.now()}!')
                 # First, update the next value.
                 job['next'] = job['iter'].get_next(datetime)
                 # Then run the function.

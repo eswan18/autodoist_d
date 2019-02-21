@@ -74,13 +74,20 @@ q.add_job(job_name='Update Templates', job_func=update,
 ####################################################################
 # Instantiate templates
 ####################################################################
-#for template in conf['template-instantiations']:
-#    project = utils.get_project_by_name(template['existing-project-name'],
-#                                        projects)
-#    template_filename = CONFIG_DIR + '/' + template['template-file']
-#    api.templates.import_into_project(project['id'], template_filename)
+labels, projects, items = utils.fetch(api)
+for template in conf['template-instantiations']:
+    project = utils.get_project_by_name(template['existing-project-name'],
+                                        projects)
+    template_filename = CONFIG_DIR + '/' + template['template-file']
+    def import_template():
+        log_str = 'Started importing template from file {}'
+        logger.info(log_str.format(template_filename))
+        api.templates.import_into_project(project['id'], template_filename)
+    job_name = 'Import' + template['existing-project-name']
+    job_func = import_template
+    job_cron = template['cron']
+    q.add_job(job_name=job_name, job_func=job_func, job_cron=job_cron)
 
-# Use the schedule module to handle the looping.
 while True:
     # Run at most every minute.
     logger.debug('Running pending job queue jobs.')
