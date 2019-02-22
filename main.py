@@ -83,7 +83,7 @@ for template in conf['template-instantiations']:
         log_str = 'Started importing template from file {}'
         logger.info(log_str.format(template_filename))
         api.templates.import_into_project(project['id'], template_filename)
-    job_name = 'Import' + template['existing-project-name']
+    job_name = 'Import ' + template['existing-project-name']
     job_func = import_template
     job_cron = template['cron']
     q.add_job(job_name=job_name, job_func=job_func, job_cron=job_cron)
