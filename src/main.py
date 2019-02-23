@@ -50,6 +50,8 @@ logger.debug('Loaded config file.')
 
 def update():
     logger.info('Started update job.')
+    api.sync()
+    logger.info('Synced with Todoist.')
     # Fetch the current versions of projects, items, and labels.
     labels, projects, items = utils.fetch(api)
     logger.info('Fetched labels, projects, and items from Todoist.')
@@ -65,8 +67,10 @@ def update():
         for item in project_items:
             if label['id'] not in item['labels']:
                 item.update(labels=item['labels'] + [label['id']])
-                log_str = 'Labeled item "{}" as "{}".'
-                log_str = log_str.format(item['content'], label['name'])
+                log_str = 'Labeled item "{}" in project "{}" as "{}".'
+                log_str = log_str.format(item['content'],
+                                         project['name'],
+                                         label['name'])
                 logger.debug(log_str)
     api.commit()
     logger.info('Committed to Todoist. Completed update job.')
