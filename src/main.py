@@ -3,6 +3,7 @@ import os
 import time
 import logging
 import argparse
+import pathlib
 # Installed
 import yaml
 import todoist
@@ -11,7 +12,8 @@ import utils
 from job_queue import JobQueue
 
 API_TOKEN = os.environ['TODOIST_API_TOKEN']
-CONFIG_DIR = 'config_files'
+CONFIG_DIR = pathlib.Path('./config')
+TEMPLATE_DIR = pathlib.Path('./config/templates')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -41,7 +43,7 @@ logger.info('Synced with Todoist.')
 q = JobQueue()
 
 # Load the config.
-with open('config.yml') as f:
+with open(CONFIG_DIR / 'config.yml') as f:
     conf = yaml.load(f)
 logger.debug('Loaded config file.')
 
@@ -78,7 +80,7 @@ labels, projects, items = utils.fetch(api)
 for template in conf['template-instantiations']:
     project = utils.get_project_by_name(template['existing-project-name'],
                                         projects)
-    template_filename = CONFIG_DIR + '/' + template['template-file']
+    template_filename = TEMPLATE_DIR / template['template-file']
     def import_template():
         log_str = 'Started importing template from file {}'
         logger.info(log_str.format(template_filename))
