@@ -65,6 +65,9 @@ def update():
         for item in project_items:
             if label['id'] not in item['labels']:
                 item.update(labels=item['labels'] + [label['id']])
+                log_str = 'Labeled item "{}" as "{}".'
+                log_str = log_str.format(item['content'], label['name'])
+                logger.debug(log_str)
     api.commit()
     logger.info('Committed to Todoist. Completed update job.')
 
