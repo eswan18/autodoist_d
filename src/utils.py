@@ -1,3 +1,9 @@
+# Import smtplib for the actual sending function
+import smtplib
+
+# Import the email modules we'll need
+from email.mime.text import MIMEText
+
 def get_project_by_name(p_name, projects):
     '''Find and return a project with name `p_name` from within `projects`.'''
     project = [project for project in projects
@@ -22,3 +28,17 @@ def fetch(api):
     projects = api.projects.all()
     items = api.items.all()
     return labels, projects, items
+
+def send_email(from_, to, subject, body, user, password):
+    email_text = f"""
+    From: {from_}
+    To: {to}
+    Subject: {subject}
+
+    {body}
+    """
+    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    server.ehlo()
+    server.login(user, password)
+    server.sendmail(from_, to, email_text)
+    server.close()
