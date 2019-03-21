@@ -19,5 +19,5 @@ replacing `<token>` with your token.
 
 Then run the container.
 ```bash
-docker run -it -e TODOIST_API_TOKEN autodoist
+docker run -d -e TODOIST_API_TOKEN --restart always autodoist
 ```
