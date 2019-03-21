@@ -12,8 +12,15 @@ import utils
 from job_queue import JobQueue
 
 API_TOKEN = os.environ['TODOIST_API_TOKEN']
+EMAIL_ADDR = os.environ['EMAIL_ADDR']
+EMAIL_PW = os.environ['EMAIL_PW']
 CONFIG_DIR = pathlib.Path('./config')
 TEMPLATE_DIR = pathlib.Path('./config/templates')
+
+# Email self to alert that Autodoist has restarted.
+utils.send_email(from_=EMAIL_ADDR, to=EMAIL_ADDR,
+                 subject='Autodoist Restarted', body='',
+                 user=EMAIL_ADDR, password=EMAIL_PW)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

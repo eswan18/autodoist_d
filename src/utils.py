@@ -29,17 +29,16 @@ def fetch(api):
     items = api.items.all()
     return labels, projects, items
 
-def send_email(msg):
-    msg = MIMEText(to, from_, subject, msg)
+def send_email(from_, to, subject, body, user, password):
+    email_text = f"""
+    From: {from_}
+    To: {to}
+    Subject: {subject}
 
-    # me == the sender's email address
-    # you == the recipient's email address
-    msg['Subject'] = subject
-    msg['From'] = from_
-    msg['To'] = to
-
-    # Send the message via our own SMTP server, but don't include the
-    # envelope header.
-    s = smtplib.SMTP('localhost')
-    s.sendmail(me, [you], msg.as_string())
-    s.quit()
+    {body}
+    """
+    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+    server.ehlo()
+    server.login(user, password)
+    server.sendmail(from_, to, email_text)
+    server.close()
