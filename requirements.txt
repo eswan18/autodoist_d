@@ -1,5 +1,5 @@
 todoist-python==7.0.19
 schedule==0.6.0
 pyyaml>=4.2b1
-croniter==0.3.27
+croniter==0.3.30
 pytz==2017.3
