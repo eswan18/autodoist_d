@@ -2,13 +2,13 @@
 
 An automated system for managing my todos via the [Todoist API](https://developer.todoist.com/sync/v7/).
 
-# Building the image
+## Building the image
 
 ```bash
 docker build -t autodoist .
 ```
 
-# Running the container
+## Running the container
 
 First, set some environment variables in your shell with
 ```bash
@@ -27,4 +27,14 @@ Then run the container, passing the environment variables and setting Docker's
 restart policy to "always".
 ```bash
 docker run -d -e TODOIST_API_TOKEN -e EMAIL_PW -e EMAIL_ADDR --restart always autodoist
+```
+
+## Stopping the container
+I've found that killing containers with *always-restart* policies often doesn't work.
+The solution is to change the restart policy to `no` before killing.
+
+For a container named "boring_wozniak":
+```bash
+docker update --restart=no boring_wozniak
+docker kill boring_wozniak
 ```
