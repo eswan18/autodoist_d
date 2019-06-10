@@ -22,7 +22,7 @@ You'll also need  to set EMAIL_ADDR and EMAIL_PW to the credentials for your gma
 Then run the container, passing the environment variables and mounting the config files in the container.
 I recommend also setting Docker's restart policy to "always" -- the container can crash for various reasons, many of which are network-related and temporary, so automatic restarting is often useful.
 ```bash
-docker run -d -e TODOIST_API_TOKEN -e EMAIL_PW -e EMAIL_ADDR --restart always --mount source=config,target=/autodoist/config autodoist
+docker run -d -e TODOIST_API_TOKEN -e EMAIL_PW -e EMAIL_ADDR --restart always --mount type=bind,source=$(pwd)/config,target=/autodoist/config autodoist
 ```
 
 ## Stopping the container
