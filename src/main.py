@@ -51,7 +51,7 @@ q = JobQueue()
 
 # Load the config.
 with open(CONFIG_DIR / 'config.yml') as f:
-    conf = yaml.load(f)
+    conf = yaml.load(f, Loader=yaml.SafeLoader)
 logger.debug('Loaded config file.')
 
 
