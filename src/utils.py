@@ -30,13 +30,10 @@ def fetch(api):
     return labels, projects, items
 
 def send_email(from_, to, subject, body, user, password):
-    email_text = f"""
-    From: {from_}
-    To: {to}
-    Subject: {subject}
+    email_text = f'''Subject: {subject}
 
     {body}
-    """
+    '''
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     server.ehlo()
     server.login(user, password)

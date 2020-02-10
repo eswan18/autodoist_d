@@ -19,7 +19,8 @@ TEMPLATE_DIR = pathlib.Path('./config/templates')
 
 # Email self to alert that Autodoist has restarted.
 utils.send_email(from_=EMAIL_ADDR, to=EMAIL_ADDR,
-                 subject='Autodoist Restarted', body='',
+                 subject='Autodoist Restarted',
+                 body='Autodoist Restarted',
                  user=EMAIL_ADDR, password=EMAIL_PW)
 
 logger = logging.getLogger(__name__)
