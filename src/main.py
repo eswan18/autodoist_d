@@ -54,7 +54,6 @@ with open(CONFIG_DIR / 'config.yml') as f:
     conf = yaml.load(f, Loader=yaml.SafeLoader)
 logger.debug('Loaded config file.')
 
-
 def update():
     logger.info('Started update job.')
     ####################################################################
@@ -68,6 +67,8 @@ def update():
         # Make sure every item has the required label. If not, add it.
         for task in tasks:
             if label_id not in task.labels:
+                # DO NOT CHANGE TO task.labels.append(...)
+                # There is a pytodoist bug that means that doesn't work.
                 task.labels = task.labels + [label_id]
                 # Sync to Todoist
                 task.update()
