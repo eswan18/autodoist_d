@@ -6,7 +6,7 @@ import argparse
 import pathlib
 # Installed
 import yaml
-import todoist
+from pytodoist import todoist
 # Project libraries
 import utils
 from job_queue import JobQueue
@@ -45,8 +45,7 @@ if args.loglevel is not None:
 logger.addHandler(ch)
 
 # Setup.
-api = todoist.TodoistAPI(API_TOKEN)
-api.sync()
+user = todoist.login_with_api_token(API_TOKEN)
 logger.info('Synced with Todoist.')
 q = JobQueue()
 
@@ -58,30 +57,26 @@ logger.debug('Loaded config file.')
 
 def update():
     logger.info('Started update job.')
-    api.sync()
-    logger.info('Synced with Todoist.')
-    # Fetch the current versions of projects, items, and labels.
-    labels, projects, items = utils.fetch(api)
-    logger.info('Fetched labels, projects, and items from Todoist.')
     ####################################################################
     # Auto-label items in projects
     ####################################################################
     for pl_map in conf['project-label']:
-        # Find the matching project and labels and get their IDs.
-        project = utils.get_project_by_name(pl_map['project'], projects)
-        label = utils.get_label_by_name(pl_map['label'], labels)
-        project_items = utils.get_items_by_project_id(project['id'], items)
+        project_name, label_name = pl_map['project'], pl_map['label']
+        # Tasks in the project in question.
+        tasks = user.get_project(project_name).get_tasks()
+        label_id = user.get_label(label_name).id
         # Make sure every item has the required label. If not, add it.
-        for item in project_items:
-            if label['id'] not in item['labels']:
-                item.update(labels=item['labels'] + [label['id']])
-                log_str = 'Labeled item "{}" in project "{}" as "{}".'
-                log_str = log_str.format(item['content'],
-                                         project['name'],
-                                         label['name'])
+        for task in tasks:
+            if label_id not in task.labels:
+                task.labels = task.labels + [label_id]
+                # Sync to Todoist
+                task.update()
+                log_str = 'Labeled task "{}" in project "{}" as "{}".'
+                log_str = log_str.format(task.content,
+                                         project_name,
+                                         label_name)
                 logger.debug(log_str)
-    api.commit()
-    logger.info('Committed to Todoist. Completed update job.')
+    logger.info('Completed update job.')
 
 
 # Add the update function to the job queue. It should run every 5 minutes.
@@ -91,10 +86,10 @@ q.add_job(job_name='Update Templates', job_func=update,
 ####################################################################
 # Instantiate templates
 ####################################################################
-labels, projects, items = utils.fetch(api)
+labels = user.get_labels()
+projects = user.get_projects()
 for template in conf['template-instantiations']:
-    project = utils.get_project_by_name(template['existing-project-name'],
-                                        projects)
+    project = user.get_project(template['existing-project-name'])
     template_filename = TEMPLATE_DIR / template['template-file']
     def import_template():
         log_str = 'Started importing template from file {}'

@@ -1,4 +1,4 @@
-todoist-python==7.0.19
+pytodoist==2.1.4
 schedule==0.6.0
 pyyaml>=4.2b1
 croniter==0.3.30
