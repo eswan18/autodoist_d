@@ -13,14 +13,31 @@ class JobQueue():
             jobdict = {}
         self.jobdict = jobdict
 
-    def add_job(self, job_name, job_func, job_cron, day_or=True):
+    def add_job(self, job_name=None, job_func=None, job_cron=None,
+                job=None, day_or=True):
         '''
         Add a new job to the queue.
 
-        :param job_name: a name for the job
-        :param job_func: a callable to be executed when the job is run
-        :param job_cron: a string in cron-format indicating when to run the job
+        Parameters
+        ----------
+        job_name : str
+            A name for the job.
+        job_func : Callable
+            A callable to be executed when the job is run.
+        job_cron : str
+            A string in cron-format indicating the cadence at which to run the
+            job.
+        job : object
+            Any object with attributes name, func, and cron. If specified,
+            overrides the above three arguments.
         '''
+        if job is not None:
+            if any([job_name, job_func, job_cron]):
+                msg = 'If job argument is set, all other arguments must not.'
+                raise ValueError(msg)
+            job_name = job.name
+            job_func = job.func
+            job_cron = job.cron
         if job_name in self.jobdict:
             raise ValueError(f'Job name {job_name} already exists.')
         # Convert the current time to UTC so the math works.
@@ -37,6 +54,21 @@ class JobQueue():
                           }
               }
         self.jobdict.update(job)
+    
+    def add_jobs(self, jobs, day_or=True):
+        '''
+        Add multiple jobs at once.
+
+        Just a convenience wrapper for add_job.
+
+        Parameters
+        ----------
+        jobs : Iterable
+            Iterable of objects, each of which has attributes name, func, and 
+            cron.
+        '''
+        for job in jobs:
+            self.add_job(job=job)
 
     def run_pending(self):
         '''

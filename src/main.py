@@ -4,11 +4,13 @@ import time
 import logging
 import argparse
 import pathlib
+import functools
 # Installed
 import yaml
 from pytodoist import todoist
 # Project libraries
 import utils
+import jobs
 from job_queue import JobQueue
 
 API_TOKEN = os.environ['TODOIST_API_TOKEN']
@@ -46,7 +48,7 @@ logger.addHandler(ch)
 
 # Setup.
 user = todoist.login_with_api_token(API_TOKEN)
-logger.info('Synced with Todoist.')
+logger.info('Logged in to Todoist.')
 q = JobQueue()
 
 # Load the config.
@@ -54,38 +56,18 @@ with open(CONFIG_DIR / 'config.yml') as f:
     conf = yaml.load(f, Loader=yaml.SafeLoader)
 logger.debug('Loaded config file.')
 
-def update():
-    logger.info('Started update job.')
-    ####################################################################
-    # Auto-label items in projects
-    ####################################################################
-    for pl_map in conf['project-label']:
-        project_name, label_name = pl_map['project'], pl_map['label']
-        # Tasks in the project in question.
-        tasks = user.get_project(project_name).get_tasks()
-        label_id = user.get_label(label_name).id
-        # Make sure every item has the required label. If not, add it.
-        for task in tasks:
-            if label_id not in task.labels:
-                # DO NOT CHANGE TO task.labels.append(...)
-                # There is a pytodoist bug that means that doesn't work.
-                task.labels = task.labels + [label_id]
-                # Sync to Todoist
-                task.update()
-                log_str = 'Labeled task "{}" in project "{}" as "{}".'
-                log_str = log_str.format(task.content,
-                                         project_name,
-                                         label_name)
-                logger.debug(log_str)
-    logger.info('Completed update job.')
+###############################################################################
+# Add jobs from the jobs.py file.
+###############################################################################
 
-
-# Add the update function to the job queue. It should run every 5 minutes.
-q.add_job(job_name='Update Templates', job_func=update,
-          job_cron='*/5 * * * *')
+# Add each job to the queue, but first bind user and conf variables.
+for job in jobs.jobs:
+    job.func = functools.partial(job.func, user=user, conf=conf)
+    #q.add_job(job_name=job.name, job_func=job.func, job_cron=job.cadence)
+    q.add_job(job=job)
 
 ####################################################################
-# Instantiate templates
+# Add a job for each template.
 ####################################################################
 labels = user.get_labels()
 projects = user.get_projects()
