@@ -2,12 +2,15 @@ from typing import Callable
 from dataclasses import dataclass
 import logging
 
+from utils import send_email
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 # Console Handler
 ch = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 def update_templates(user, conf):
     '''Automatically label tasks in projects.
@@ -42,7 +45,7 @@ def update_templates(user, conf):
     logger.info('Completed update job.')
 
 def missing_due_date_alert(user, conf):
-    print('Starting missing due date alert')
+    logger.info('Started missing due date alert job.')
     # We need to keep track of the tasks we've already seen -- can be done by
     # setting an attribute of the function.
     try:
@@ -59,12 +62,22 @@ def missing_due_date_alert(user, conf):
                     if task.id not in seen_ids]
     seen_ids.extend([task.id for task in unseen_tasks])
     missing_due_date_alert.seen_ids = seen_ids
-    #missing_due_date_alert.seen_ids = seen_ids
-    for task in unseen_tasks:
-        s = (f'You added a task "{task.content}" to project '
-             f'{task.project.name} without a due date. Was this intentional?')
-        print(s)
-
+    if unseen_tasks:
+        msg = 'You added {n} tasks without due dates. Was this intentional?\n'
+        msg = msg.format(n=len(unseen_tasks))
+        msg += 'New tasks without dates:\n'
+        for task in unseen_tasks:
+            content = task.content.encode(encoding='ascii',
+                                          errors='replace').decode()
+            project = task.project.name.encode(encoding='ascii',
+                                               errors='replace').decode()
+            msg += f'  - "{content}" in project "{project}"\n'
+        send_email(from_=conf['email_addr'], to=conf['email_addr'],
+                   user=conf['email_addr'], password=conf['email_pw'],
+                   body=msg, subject='Autodoist: Tasks Without Due Dates')
+    # Eventually these log statements should be handled by the decorator that
+    # adorns these job functions.
+    logger.info('Finished missing due date alert job.')
 
 # Create a record class.
 # I would have liked to use a named tuple here but the immutability turned out

@@ -54,6 +54,10 @@ q = JobQueue()
 # Load the config.
 with open(CONFIG_DIR / 'config.yml') as f:
     conf = yaml.load(f, Loader=yaml.SafeLoader)
+# Add the environment variables to the config dict.
+conf['email_addr'] = EMAIL_ADDR
+conf['email_pw'] = EMAIL_PW
+conf['api_token'] = API_TOKEN
 logger.debug('Loaded config file.')
 
 ###############################################################################
