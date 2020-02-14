@@ -5,9 +5,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 def send_email(from_, to, subject, body, user, password):
-    email_text = f'''Subject: {subject}
-
-    {body}
+    email_text = f'''Subject: {subject}\n\n{body}
     '''
     server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
     server.ehlo()
