@@ -1,11 +1,11 @@
 FROM python:3.7
 
-WORKDIR /autodoist/
+WORKDIR /autodoist_d/
 
-COPY ./requirements.txt /autodoist/
+COPY ./requirements.txt /autodoist_d/
 
 RUN pip install -r requirements.txt
 
-COPY src /autodoist/src
+COPY src /autodoist_d/src
 
 CMD python src/main.py
