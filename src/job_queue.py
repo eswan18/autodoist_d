@@ -2,16 +2,20 @@ from datetime import datetime
 from croniter import croniter
 import pytz
 
+import logging
 
 class JobQueue():
     '''
     A queue of jobs to be run at regular intervals.
     '''
 
-    def __init__(self, jobdict=None):
+    def __init__(self, jobdict=None, logger=None):
         if jobdict is None:
             jobdict = {}
         self.jobdict = jobdict
+        if logger is None:
+            logger = logging.getLogger(__name__)
+        self.logger = logger
 
     def add_job(self, job_name=None, job_func=None, job_cron=None,
                 job=None, day_or=True):
@@ -80,7 +84,12 @@ class JobQueue():
                 # Update the next time.
                 job['next'] = job['iter'].get_next(datetime)
                 # Then run the function.
-                job['func']()
+                try:
+                    job['func']()
+                # Catch *all* exceptions since the program should never die on
+                # bad code in a job.
+                except BaseException as e:
+                    self.logger.error(str(e))
 
     def __str__(self):
         s = '<JobQueue with {} jobs>'

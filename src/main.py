@@ -49,7 +49,7 @@ logger.addHandler(ch)
 # Setup.
 user = todoist.login_with_api_token(API_TOKEN)
 logger.info('Logged in to Todoist.')
-q = JobQueue()
+q = JobQueue(logger=logger)
 
 # Load the config.
 with open(CONFIG_DIR / 'config.yml') as f:
