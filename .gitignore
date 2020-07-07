@@ -1,3 +1,4 @@
 config*
 env
 .*.swp
+__pycache__
